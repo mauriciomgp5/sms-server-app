@@ -7,95 +7,26 @@ use Illuminate\Support\Facades\Http;
 
 class SmsGatewayService
 {
-    protected $baseUrl;
+    protected $request;
+    protected $slot;
 
-    public function __construct()
+    public function __construct($gateway)
     {
-        $this->baseUrl = env('SMS_GATEWAY_BASE_URL', 'http://192.168.1.43:8080');
+        $urlBase = "{$gateway->ip_address}:{$gateway->port}";
+
+        $this->request = Http::withBasicAuth($gateway->username, $gateway->password)
+            ->withHeaders([
+                'Content-Type' => 'application/json',
+            ])->baseUrl($urlBase);
     }
 
-    public function getThreads($limit = 10, $offset = 0)
+    public function sendSms($message, $phoneNumbers)
     {
-        $response = Http::get("{$this->baseUrl}/v1/thread", [
-            'limit' => $limit,
-            'offset' => $offset,
-        ]);
-
-        return $response->json();
-    }
-
-    public function getThreadMessages($threadId, $limit = 10, $offset = 0)
-    {
-        $response = Http::get("{$this->baseUrl}/v1/thread/{$threadId}", [
-            'limit' => $limit,
-            'offset' => $offset,
-        ]);
-
-        return $response->json();
-    }
-
-    public function listSms($limit = 10, $offset = 0)
-    {
-        $response = Http::get("{$this->baseUrl}/v1/sms", [
-            'limit' => $limit,
-            'offset' => $offset,
-        ]);
-
-        return $response->json();
-    }
-
-    public function sendSms($phone, $message, $slot)
-    {
-        $gateway = $slot->gateway;
-
-        if (!$slot) {
-            return [
-                'error' => 'Slot não encontrado',
-            ];
-        }
-
-        if (!$gateway) {
-            return [
-                'error' => 'Gateway não encontrado',
-            ];
-        }
-
-        if (!$slot->is_active) {
-            return [
-                'error' => 'Slot desativado',
-            ];
-        }
-
-        if ($slot->sent_count >= $slot->max_sends) {
-            return [
-                'error' => 'Limite de envios atingido',
-            ];
-        }
-
-        $query = [
-            'phone' => $phone,
-            'message' => $message,
-            'sim_slot' => $slot->slot_number,
-        ];
-
         try {
-            //code...
-            // $url = "{$gateway->ip_address}:{$gateway->port}/v1/sms/?" . http_build_query($query);
-
-            $username = 'sms';
-            $password = '5vYYBbvN';
-            $deviceLocalIp = 'seu-device-local-ip';
-            $url = "{$gateway->ip_address}:{$gateway->port}/message";
-
-            $response = Http::withBasicAuth($username, $password)
-                ->withHeaders([
-                    'Content-Type' => 'application/json',
-                ])
-                ->post($url, [
+            $response = $this->request
+                ->post('message', [
                     'message' => $message,
-                    'phoneNumbers' => [
-                        $phone
-                    ],
+                    'phoneNumbers' => $phoneNumbers,
                 ]);
 
             if ($response->successful()) {
@@ -110,15 +41,17 @@ class SmsGatewayService
         }
 
         // Registrar o envio no banco de dados
-        $smsLog = SmsLog::create([
-            'gateway_id' => $gateway->id,
-            'slot_id' => $slot->id,
-            'phone' => $phone,
-            'message' => $message,
-        ]);
-
-        // Atualizar contagem de envios
-        $slot->increment('sent_count');
+        foreach ($phoneNumbers as $phone) {
+            $smsLog = SmsLog::create([
+                'external_id' => $data['id'],
+                'gateway_id' => $this->slot->gateway_id,
+                'slot_id' => $this->slot->id,
+                'phone' => $phone,
+                'message' => $message,
+            ]);
+            // Atualizar contagem de envios
+            $this->slot->increment('sent_count');
+        }
 
         return [
             'response' => $response->body(),
@@ -126,18 +59,96 @@ class SmsGatewayService
         ];
     }
 
-
-    public function getSms($smsId)
+    public function getDevice()
     {
-        $response = Http::get("{$this->baseUrl}/v1/sms/{$smsId}");
+        $response = $this->request->get('device');
 
-        return $response->json();
+        if ($response->successful()) {
+            return $response->json();
+        } else {
+            return [
+                'error' => 'Failed to fetch devices',
+                'status' => $response->status(),
+                'response' => $response->json(),
+            ];
+        }
     }
 
-    public function getDeviceStatus()
+    public function getMessageStatus($id)
     {
-        $response = Http::get("{$this->baseUrl}/v1/device/status");
+        $response = $this->request->get("message/{$id}");
 
-        return $response->json();
+        if ($response->successful()) {
+            return $response->json();
+        } else {
+            return [
+                'error' => 'Failed to fetch message status',
+                'status' => $response->status(),
+                'response' => $response->json(),
+            ];
+        }
+    }
+
+    public function healthCheck()
+    {
+        $response = $this->request->get('health');
+
+        if ($response->successful()) {
+            return $response->json();
+        } else {
+            return [
+                'error' => 'Failed to check health status',
+                'status' => $response->status(),
+                'response' => $response->json(),
+            ];
+        }
+    }
+
+    public function listWebhooks()
+    {
+        $response = $this->request->get('webhooks');
+
+        if ($response->successful()) {
+            return $response->json();
+        } else {
+            return [
+                'error' => 'Failed to list webhooks',
+                'status' => $response->status(),
+                'response' => $response->json(),
+            ];
+        }
+    }
+
+    public function registerWebhook($webhookUrl, $events)
+    {
+        $response = $this->request->post('webhooks', [
+            'url' => $webhookUrl,
+            'events' => $events,
+        ]);
+
+        if ($response->successful()) {
+            return $response->json();
+        } else {
+            return [
+                'error' => 'Failed to register webhook',
+                'status' => $response->status(),
+                'response' => $response->json(),
+            ];
+        }
+    }
+
+    public function deleteWebhook($id)
+    {
+        $response = $this->request->delete("webhooks/{$id}");
+
+        if ($response->successful()) {
+            return $response->json();
+        } else {
+            return [
+                'error' => 'Failed to delete webhook',
+                'status' => $response->status(),
+                'response' => $response->json(),
+            ];
+        }
     }
 }

@@ -5,8 +5,10 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\SmsGatewayResource\Pages;
 use App\Filament\Resources\SmsGatewayResource\RelationManagers;
 use App\Models\SmsGateway;
+use App\Services\Sms\SmsGatewayService;
 use Filament\Forms;
 use Filament\Forms\Form;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
@@ -42,6 +44,24 @@ class SmsGatewayResource extends Resource
                     ->minValue(1)
                     ->maxValue(65535)
                     ->required(),
+                Forms\Components\TextInput::make('slots')
+                    ->label('Slots')
+                    ->hintIcon('heroicon-o-information-circle')
+                    ->hintIconTooltip('Número de slots de Chip SIM disponíveis')
+                    ->numeric()
+                    ->minValue(1)
+                    ->maxValue(65535)
+                    ->required(),
+
+                Forms\Components\TextInput::make('username')
+                    ->label('Usuário')
+                    ->hintIcon('heroicon-o-information-circle')
+                    ->hintIconTooltip('Usuário para autenticação no gateway'),
+
+                Forms\Components\TextInput::make('password')
+                    ->label('Senha')
+                    ->hintIcon('heroicon-o-information-circle')
+                    ->hintIconTooltip('Senha para autenticação no gateway'),
 
                 Forms\Components\Textarea::make('description')
                     ->columnSpanFull()
@@ -78,6 +98,17 @@ class SmsGatewayResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\Action::make('check-device')
+                    ->action(function ($record) {
+                        if (empty($record->username) || empty($record->password)) {
+                            return Notification::make()
+                                ->title('Erro')
+                                ->body('Usuário e senha não configurados')
+                                ->danger();
+                        }
+                        $service = new SmsGatewayService($record);
+                        dd($service->getDevice());
+                    }),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([

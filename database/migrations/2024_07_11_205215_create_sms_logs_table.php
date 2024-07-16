@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('sms_logs', function (Blueprint $table) {
             $table->id();
+            $table->string('external_id')->unique();
             $table->foreignId('gateway_id')->constrained('sms_gateways')->onDelete('cascade');
             $table->foreignId('slot_id')->constrained('sms_slots')->onDelete('cascade');
             $table->string('phone');
