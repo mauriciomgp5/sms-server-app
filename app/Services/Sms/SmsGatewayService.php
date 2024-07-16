@@ -92,12 +92,17 @@ class SmsGatewayService
                     'Content-Type' => 'application/json',
                 ])
                 ->post($url, [
-                    'message' => 'Hello, world!',
+                    'message' => $message,
                     'phoneNumbers' => [
-                        '5517996165851',
+                        $phone
                     ],
                 ]);
-            dd($response->body());
+
+            if ($response->successful()) {
+                $data = $response->json();
+            } else {
+                return response()->json(['error' => 'Failed to send SMS'], $response->status());
+            }
         } catch (\Throwable $th) {
             return [
                 'error' => $th->getMessage()

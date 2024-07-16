@@ -5,8 +5,6 @@ services:
     build: .
     volumes:
       - .:/var/www
-    ports:
-      - "${APP_PORT}:80"
     depends_on:
       - mysql
       - redis
@@ -22,8 +20,6 @@ services:
       MYSQL_DATABASE: ${DB_DATABASE}
       MYSQL_USER: ${DB_USERNAME}
       MYSQL_PASSWORD: ${DB_PASSWORD}
-    ports:
-      - '${FORWARD_MYSQL_PORT:-3306}:3306'
     volumes:
       - app-mysql:/var/lib/mysql
     networks:
@@ -32,25 +28,6 @@ services:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
       retries: 3
       timeout: 5s
-
-  # Your original pma service
-  pma:
-    container_name: ${APP_NAME}_pma
-    image: 'phpmyadmin/phpmyadmin:latest'
-    depends_on:
-      - mysql
-    ports:
-      - '9000:80'
-    environment:
-      PMA_HOST: ${APP_NAME}_mysql
-      PMA_PORT: 3306
-      PMA_USER: ${DB_USERNAME}
-      PMA_PASSWORD: ${DB_PASSWORD}
-      PMA_THEME: 'metro_dark' # Defina o tema escuro aqui
-    volumes:
-      - ./customizations:/var/www/html/themes/custom # Monte o volume para o tema personalizado
-    networks:
-      - app-network
 
   # Your original redis service
   redis:
@@ -61,21 +38,10 @@ services:
     networks:
       - app-network
 
-  # Your original mailpit service
-  mailpit:
-    container_name: ${APP_NAME}_mailpit
-    image: 'axllent/mailpit:latest'
-    ports:
-      - '${FORWARD_MAILPIT_DASHBOARD_PORT:-8025}:8025'
-    networks:
-      - app-network
-
   # Your original meilisearch service
   meilisearch:
     container_name: ${APP_NAME}_meilisearch
     image: 'getmeili/meilisearch:latest'
-    ports:
-      - '${FORWARD_MEILISEARCH_PORT:-7700}:7700'
     volumes:
       - 'app-meilisearch:/data.ms'
     networks:
@@ -86,7 +52,7 @@ services:
 
   evolution:
     # image: atendai/evolution-api:latest
-    image: atendai/evolution-api:latest
+    image: evolution-api
     command: ["node", "./dist/src/main.js"]
     environment:
       SERVER_TYPE: "http"
@@ -109,16 +75,12 @@ services:
     volumes:
       - evolution_instances:/evolution/instances
       - evolution_store:/evolution/store
-    ports:
-      - 4000:8080
     networks:
       - app-network  # Added to the same network
 
   # The mongodb service from the second file
   mongodb:
     image: mongo:latest
-    ports:
-      - 27017:27017
     environment:
       MONGO_INITDB_ROOT_USERNAME: "root"
       MONGO_INITDB_ROOT_PASSWORD: "as4590kx"
