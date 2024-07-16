@@ -83,53 +83,6 @@ services:
     environment:
       - MEILI_MASTER_KEY=MASTER_KEY
 
-
-  evolution:
-    # image: atendai/evolution-api:latest
-    image: atendai/evolution-api:latest
-    command: ["node", "./dist/src/main.js"]
-    environment:
-      SERVER_TYPE: "http"
-      SERVER_URL: http://localhost:8080
-      CONFIG_SESSION_PHONE_CLIENT: ${APP_NAME}
-      # ApiKey Config for authentication High Encryption AES 256 from https://acte.ltd/utils/randomkeygen
-      AUTHENTICATION_TYPE: "apikey"
-      AUTHENTICATION_API_KEY: "681afda0-aaf7-4b19-8e9f-d61ad072329d"
-       # Database 
-      DATABASE_ENABLED: "true" 
-      DATABASE_CONNECTION_URI: "mongodb://root:as4590kx@mongodb:27017/?authSource=admin&readPreference=primary&ssl=false&directConnection=true"
-      DATABASE_CONNECTION_DB_PREFIX_NAME: "evdocker"
-      # Choose the data you want to save in the application's database or store
-      DATABASE_SAVE_DATA_INSTANCE: "true"
-      DATABASE_SAVE_DATA_NEW_MESSAGE: "true"
-      DATABASE_SAVE_MESSAGE_UPDATE: "true"
-      DATABASE_SAVE_DATA_CONTACTS: "true"
-      DATABASE_SAVE_DATA_CHATS: "true"
-      
-    volumes:
-      - evolution_instances:/evolution/instances
-      - evolution_store:/evolution/store
-    ports:
-      - 4000:8080
-    networks:
-      - app-network  # Added to the same network
-
-  # The mongodb service from the second file
-  mongodb:
-    image: mongo:latest
-    ports:
-      - 27017:27017
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: "root"
-      MONGO_INITDB_ROOT_PASSWORD: "as4590kx"
-      PUID: "1000"
-      PGID: "1000"
-    volumes:
-      - mongodb_data:/data/db
-      - mongodb_configdb:/data/configdb
-    networks:
-      - app-network  # Added to the same network
-
 # Combine volumes from both files
 volumes:
   app-redis:
@@ -138,10 +91,6 @@ volumes:
     driver: local
   app-meilisearch:
     driver: local
-  mongodb_data: {}
-  mongodb_configdb: {}
-  evolution_instances: {}
-  evolution_store: {}
 
 # Keep the same network
 networks:
