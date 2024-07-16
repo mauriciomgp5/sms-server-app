@@ -80,8 +80,24 @@ class SmsGatewayService
 
         try {
             //code...
-            $url = "{$gateway->ip_address}:{$gateway->port}/v1/sms/?" . http_build_query($query);
-            $response = Http::put($url);
+            // $url = "{$gateway->ip_address}:{$gateway->port}/v1/sms/?" . http_build_query($query);
+
+            $username = 'sms';
+            $password = '5vYYBbvN';
+            $deviceLocalIp = 'seu-device-local-ip';
+            $url = "{$gateway->ip_address}:{$gateway->port}/message";
+
+            $response = Http::withBasicAuth($username, $password)
+                ->withHeaders([
+                    'Content-Type' => 'application/json',
+                ])
+                ->post($url, [
+                    'message' => 'Hello, world!',
+                    'phoneNumbers' => [
+                        '5517996165851',
+                    ],
+                ]);
+            dd($response->body());
         } catch (\Throwable $th) {
             return [
                 'error' => $th->getMessage()
