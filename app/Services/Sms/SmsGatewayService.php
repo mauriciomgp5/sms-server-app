@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Http;
 class SmsGatewayService
 {
     protected $request;
-    protected $slot;
 
     public function __construct($gateway)
     {
@@ -20,16 +19,19 @@ class SmsGatewayService
             ])->baseUrl($urlBase);
     }
 
-    public function sendSms($message, $phoneNumbers)
+    public function sendSms($message, $phoneNumbers, $slot)
     {
         try {
             $response = $this->request
                 ->post('message', [
+                    'simNumber' => $slot->slot_number,
                     'message' => $message,
                     'phoneNumbers' => $phoneNumbers,
+                    'withDeliveryReport' => true,
                 ]);
 
             if ($response->successful()) {
+                info($response->body());
                 $data = $response->json();
             } else {
                 return response()->json(['error' => 'Failed to send SMS'], $response->status());
@@ -44,13 +46,13 @@ class SmsGatewayService
         foreach ($phoneNumbers as $phone) {
             $smsLog = SmsLog::create([
                 'external_id' => $data['id'],
-                'gateway_id' => $this->slot->gateway_id,
-                'slot_id' => $this->slot->id,
+                'gateway_id' => $slot->gateway_id,
+                'slot_id' => $slot->id,
                 'phone' => $phone,
                 'message' => $message,
             ]);
             // Atualizar contagem de envios
-            $this->slot->increment('sent_count');
+            $slot->increment('sent_count');
         }
 
         return [
@@ -61,7 +63,7 @@ class SmsGatewayService
 
     public function getDevice()
     {
-        $response = $this->request->get('device');
+        $response = $this->request->get('health');
 
         if ($response->successful()) {
             return $response->json();
@@ -104,7 +106,22 @@ class SmsGatewayService
         }
     }
 
-    public function listWebhooks()
+    public function checkConnection()
+    {
+        $response = $this->request->get('/');
+
+        if ($response->successful()) {
+            return $response->json();
+        } else {
+            return [
+                'error' => 'Failed to check health status',
+                'status' => $response->status(),
+                'response' => $response->json(),
+            ];
+        }
+    }
+
+    public function getWebhooks()
     {
         $response = $this->request->get('webhooks');
 
@@ -119,12 +136,14 @@ class SmsGatewayService
         }
     }
 
-    public function registerWebhook($webhookUrl, $events)
+    public function registerWebhook($id, $webhookUrl, $events)
     {
         $response = $this->request->post('webhooks', [
+            'id' => $id,
             'url' => $webhookUrl,
-            'events' => $events,
+            'event' => $events,
         ]);
+
 
         if ($response->successful()) {
             return $response->json();

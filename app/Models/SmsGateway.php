@@ -11,10 +11,10 @@ class SmsGateway extends Model
 {
     use HasFactory;
 
-    public function team(): BelongsTo
-    {
-        return $this->belongsTo(Team::class);
-    }
+    protected $casts = [
+        'is_active' => 'boolean',
+        'data' => 'array',
+    ];
 
     public function logs(): HasMany
     {

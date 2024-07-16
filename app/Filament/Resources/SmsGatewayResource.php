@@ -17,8 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 
 class SmsGatewayResource extends Resource
 {
-    protected static ?string $label = 'Gateway';
-    protected static ?string $pluralLabel = 'Gateways';
+    protected static ?string $label = 'Dispositivo';
 
     protected static ?string $model = SmsGateway::class;
 
@@ -83,6 +82,15 @@ class SmsGatewayResource extends Resource
                 Tables\Columns\TextColumn::make('ip_address')
                     ->label('Endereço IP')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('port')
+                    ->label('Porta')
+                    ->searchable(),
+                Tables\Columns\IconColumn::make('is_active')
+                    ->label('Ativo')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('model')
+                    ->label('Modelo')
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Criado em')
                     ->dateTime()
@@ -107,9 +115,88 @@ class SmsGatewayResource extends Resource
                                 ->danger();
                         }
                         $service = new SmsGatewayService($record);
-                        dd($service->getDevice());
+                        $resp = $service->checkConnection();
+                        if (isset($resp['status']) && $resp['status'] === 'ok') {
+                            $record->update(['is_active' => true, 'model' => $resp['model']]);
+                            Notification::make()
+                                ->title('Sucesso')
+                                ->body('Gateway conectado com sucesso')
+                                ->success()
+                                ->send();
+                        } else {
+                            $record->update(['is_active' => false]);
+                            Notification::make()
+                                ->title('Erro')
+                                ->body('Falha ao conectar com o gateway')
+                                ->danger()
+                                ->send();
+                        }
                     }),
                 Tables\Actions\EditAction::make(),
+                Tables\Actions\ActionGroup::make([
+                    Tables\Actions\Action::make('list-webhooks')
+                        ->label('Webhooks')
+                        ->action(function ($record) {
+                            $service = new SmsGatewayService($record);
+                            dd($service->getWebhooks());
+                        }),
+                    //register webhooks
+                    Tables\Actions\Action::make('register-webhooks')
+                        ->label('Registrar Webhooks')
+                        ->form([
+                            Forms\Components\TextInput::make('url')
+                                ->label('URL')
+                                ->required(),
+                            Forms\Components\Select::make('event')
+                                ->label('Evento')
+                                ->options([
+                                    'sms:received' => 'SMS Recebido',
+                                ])
+                                ->required(),
+                        ])
+                        ->action(function ($record, $data) {
+                            $service = new SmsGatewayService($record);
+                            $resp = $service->registerWebhook($record->id, $data['url'], $data['event']);
+                            if (isset($resp['error'])) {
+                                Notification::make()
+                                    ->title('Erro')
+                                    ->body($resp['error'])
+                                    ->danger()
+                                    ->send();
+                            } else {
+                                Notification::make()
+                                    ->title('Sucesso')
+                                    ->body('Webhook registrado com sucesso')
+                                    ->success()
+                                    ->send();
+                            }
+                        }),
+                    //delete webhook
+                    Tables\Actions\Action::make('delete-webhook')
+                        ->label('Deletar Webhook')
+                        ->form([
+                            Forms\Components\TextInput::make('webhook_id')
+                                ->label('Webhook')
+                                ->required(),
+                        ])
+                        ->action(function ($record, $data) {
+                            $service = new SmsGatewayService($record);
+                            $resp = $service->deleteWebhook($data['webhook_id']);
+                            if (isset($resp['error'])) {
+                                Notification::make()
+                                    ->title('Erro')
+                                    ->body($resp['error'])
+                                    ->danger()
+                                    ->send();
+                            } else {
+                                Notification::make()
+                                    ->title('Sucesso')
+                                    ->body('Webhook deletado com sucesso')
+                                    ->success()
+                                    ->send();
+                            }
+                        }),
+                ])
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([

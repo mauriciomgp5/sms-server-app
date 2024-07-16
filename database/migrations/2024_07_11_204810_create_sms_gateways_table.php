@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('port');
             $table->boolean('is_active')->default(false);
             $table->string('description')->nullable();
+            $table->string('model')->nullable();
             $table->integer('slots')->default(1);
             $table->json('data')->nullable();
             $table->timestamps();

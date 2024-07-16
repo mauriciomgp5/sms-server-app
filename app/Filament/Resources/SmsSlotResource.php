@@ -18,8 +18,8 @@ use Filament\Forms\Get;
 
 class SmsSlotResource extends Resource
 {
+    protected static ?string $label = 'Sim Card';
     protected static ?string $model = SmsSlot::class;
-    // Especifique o relacionamento de propriedade
     protected static ?string $tenantOwnershipRelationshipName = 'gateway';
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
@@ -40,7 +40,7 @@ class SmsSlotResource extends Resource
                     ->visible(fn (Get $get) => $get('gateway_id') !== null)
                     ->unique(modifyRuleUsing: function ($rule, Get $get) {
                         return $rule->where('gateway_id', $get('gateway_id'));
-                    })
+                    }, ignoreRecord: true)
                     ->required()
                     ->numeric(),
                 Forms\Components\Toggle::make('is_active')
@@ -108,7 +108,9 @@ class SmsSlotResource extends Resource
                         Forms\Components\TextInput::make('phone')
                             ->label('Telefone')
                             ->tel()
-                            ->default('17996165851')
+                            ->hintIcon('heroicon-o-phone')
+                            ->hintIconTooltip('Informe o número de telefone no formato 5511999999999')
+                            ->default('5517996165851')
                             ->required()
                             ->maxLength(255),
                         Forms\Components\Textarea::make('message')
@@ -118,8 +120,8 @@ class SmsSlotResource extends Resource
                             ->columnSpanFull(),
                     ])
                     ->action(function (array $data, $record) {
-                        $sgs = new SmsGatewayService();
-                        $resp = $sgs->sendSms($data['phone'], $data['message'], $record);
+                        $sgs = new SmsGatewayService($record->gateway);
+                        $resp = $sgs->sendSms($data['message'], ['+' . $data['phone']], $record);
                         if (isset($resp['error'])) {
                             Notification::make()
                                 ->title('Erro')

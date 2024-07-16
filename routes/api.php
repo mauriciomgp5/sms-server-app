@@ -2,12 +2,10 @@
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\SmsWebhookController;
 
 Route::get('/user', function (Request $request) {
     return $request->user();
 })->middleware('auth:sanctum');
 
-Route::get('test', function (Request $request) {
-    info('test');
-    dd($request->all());
-});
+Route::post('/sms-webhook', [SmsWebhookController::class, 'handle']);

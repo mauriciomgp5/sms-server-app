@@ -2,20 +2,24 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\SmsLogResource\Pages;
-use App\Filament\Resources\SmsLogResource\RelationManagers;
-use App\Models\SmsLog;
 use Filament\Forms;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
 use Filament\Tables;
+use App\Models\SmsLog;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use App\Enums\SmsLog\StatusEnum;
+use Filament\Resources\Resource;
+use Filament\Forms\Components\Section;
+use App\Services\Sms\SmsGatewayService;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
+use App\Filament\Resources\SmsLogResource\Pages;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\SmsLogResource\RelationManagers;
 
 class SmsLogResource extends Resource
 {
-    protected static ?string $label = 'Log';
+    protected static ?string $label = 'Envio';
     protected static ?string $model = SmsLog::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
@@ -49,20 +53,36 @@ class SmsLogResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('gateway_id')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('slot.gateway.name')
+                    ->label('Dispositivo')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('slot_id')
+                    ->label('Slot')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('phone')
+                    ->label('Telefone')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('message')
+                    ->label('Mensagem')
+                    ->searchable()
+                    ->wrap(),
+                Tables\Columns\TextColumn::make('status')
+                    ->badge()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('external_id')
+                    ->label('ID Externo')
+                    ->numeric()
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Criado em')
+                    ->dateTime('d/m/Y H:i:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Atualizado em')
+                    ->dateTime('d/m/Y H:i:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
@@ -70,13 +90,51 @@ class SmsLogResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\Action::make('check-status')
+                    ->label('Check Status')
+                    ->action(function ($record) {
+                        $smsService = new SmsGatewayService($record->slot->gateway);
+                        $response = $smsService->getMessageStatus($record->external_id);
+                        if (isset($response['state']) && $response['state'] === 'Delivered') {
+                            if ($record->status !== StatusEnum::Responsed) {
+                                $record->update(['status' => StatusEnum::Delivered]);
+                            }
+                            Notification::make()
+                                ->title('Status Atualizado')
+                                ->body('Status da mensagem atualizado.')
+                                ->success()
+                                ->send();
+                        } elseif (isset($response['state']) && $response['state'] === 'Pending') {
+                            Notification::make()
+                                ->title('Pendente')
+                                ->body('Preparando para envio.')
+                                ->warning()
+                                ->send();
+                        } elseif (isset($response['state']) && $response['state'] === 'Sent') {
+                            if ($record->status !== StatusEnum::Responsed) {
+                                $record->update(['status' => StatusEnum::Sent]);
+                            }
+                            Notification::make()
+                                ->title('Processado')
+                                ->body('Mensagem enviada, mas sem relatos de entrega.')
+                                ->success()
+                                ->send();
+                        } else {
+                            Notification::make()
+                                ->title('Erro')
+                                ->body(json_encode($response))
+                                ->danger()
+                                ->persistent()
+                                ->send();
+                        }
+                    }),
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([
                     Tables\Actions\DeleteBulkAction::make(),
                 ]),
-            ]);
+            ])->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array
@@ -90,7 +148,7 @@ class SmsLogResource extends Resource
     {
         return [
             'index' => Pages\ListSmsLogs::route('/'),
-            'create' => Pages\CreateSmsLog::route('/create'),
+            // 'create' => Pages\CreateSmsLog::route('/create'),
             'edit' => Pages\EditSmsLog::route('/{record}/edit'),
         ];
     }

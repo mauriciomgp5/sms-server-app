@@ -39,15 +39,21 @@ class SmsResponseResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('sms_log_id')
-                    ->numeric()
+                Tables\Columns\TextColumn::make('message')
+                    ->label('Resposta')
+                    ->wrap()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('smsLog.message')
+                    ->label('Mensagem enviada')
+                    ->wrap()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->label('Criado em')
+                    ->dateTime('d/m/Y H:i:s')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Atualizado em')
+                    ->dateTime('d/m/Y H:i:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])

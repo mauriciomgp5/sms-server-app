@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('sms_responses', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('sms_log_id')->constrained('sms_logs')->onDelete('cascade');
-            $table->text('response');
+            $table->foreignId('sms_log_id')->nullable()->constrained('sms_logs')->onDelete('cascade');
+            $table->text('message');
             $table->timestamps();
         });
     }
