@@ -3,8 +3,12 @@
 namespace App\Filament\SmsPanel\Resources\SmsLogResource\Pages;
 
 use App\Filament\SmsPanel\Resources\SmsLogResource;
+use App\Models\Company;
 use Filament\Actions;
+use Filament\Forms;
+use Filament\Notifications\Notification;
 use Filament\Resources\Pages\ListRecords;
+use Leandrocfe\FilamentPtbrFormFields\PhoneNumber;
 
 class ListSmsLogs extends ListRecords
 {
@@ -13,7 +17,43 @@ class ListSmsLogs extends ListRecords
     protected function getHeaderActions(): array
     {
         return [
-            Actions\CreateAction::make(),
+            Actions\Action::make('send_sms')
+                ->label('Enviar SMS')
+                ->icon('heroicon-o-phone')
+                ->modal()
+                ->modalWidth('md')
+                ->form([
+                    Forms\Components\Select::make('company_id')
+                        ->label('Empresa')
+                        ->options(Company::whereHas('users', function ($query) {
+                            $query->where('user_id', auth()->id());
+                        })->pluck('name', 'id'))
+                        ->default(Company::whereHas('users', function ($query) {
+                            $query->where('user_id', auth()->id());
+                        })->first()->id)
+                        ->searchable()
+                        ->required(),
+                    PhoneNumber::make('phone')
+                        ->label('Telefone')
+                        ->required(),
+                    Forms\Components\Textarea::make('message')
+                        ->label('Mensagem')
+                        ->required(),
+                ])
+                ->action(function ($data) {
+                    $company = Company::find($data['company_id']);
+                    if ($company->balance?->balance > 0) {
+                        // send sms code here
+                    } else {
+                        Notification::make()
+                            ->title('Saldo insuficiente')
+                            ->body('A empresa ' . $company->name . ' não possui saldo suficiente para enviar SMS.')
+                            ->danger()
+                            ->send();
+                    }
+                })
+
+
         ];
     }
 }

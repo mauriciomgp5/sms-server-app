@@ -3,6 +3,7 @@
 namespace App\Services\Sms;
 
 use App\Models\SmsLog;
+use App\Models\SmsSlot;
 use Illuminate\Support\Facades\Http;
 
 class SmsGatewayService
@@ -19,7 +20,7 @@ class SmsGatewayService
             ])->baseUrl($urlBase);
     }
 
-    public function sendSms($message, $phoneNumbers, $slot)
+    public function sendSmsBySlot($message, $phoneNumbers, $slot)
     {
         try {
             $response = $this->request
@@ -167,6 +168,69 @@ class SmsGatewayService
                 'error' => 'Failed to delete webhook',
                 'status' => $response->status(),
                 'response' => $response->json(),
+            ];
+        }
+    }
+
+    public function getNextAvailableSlot()
+    {
+        // Seleciona o próximo slot que não atingiu o limite de envios mensais
+        $slot = SmsSlot::where('is_active', 1)
+            ->where('sent_count', '<', 'max_sends')
+            ->orderBy('updated_at', 'asc')
+            ->first();
+
+        if (!$slot) {
+            throw new \Exception('No available slots for sending SMS.');
+        }
+
+        return $slot;
+    }
+
+    public function sendSms($message, $phoneNumbers)
+    {
+        try {
+            // Obtém o próximo slot disponível
+            $slot = $this->getNextAvailableSlot();
+
+            $response = $this->request
+                ->post('message', [
+                    'simNumber' => $slot->slot_number,
+                    'message' => $message,
+                    'phoneNumbers' => $phoneNumbers,
+                    'withDeliveryReport' => true,
+                ]);
+
+            if ($response->successful()) {
+                info($response->body());
+                $data = $response->json();
+            } else {
+                return response()->json(['error' => 'Failed to send SMS'], $response->status());
+            }
+
+            // Registrar o envio no banco de dados
+            foreach ($phoneNumbers as $phone) {
+                $smsLog = SmsLog::create([
+                    'external_id' => $data['id'],
+                    'gateway_id' => $slot->gateway_id,
+                    'slot_id' => $slot->id,
+                    'phone' => $phone,
+                    'message' => $message,
+                ]);
+                // Atualizar contagem de envios
+                $slot->increment('sent_count');
+            }
+
+            // Atualizar o timestamp do último envio
+            $slot->update(['last_sent_at' => now()]);
+
+            return [
+                'response' => $response->body(),
+                'sms_log_id' => $smsLog->id,
+            ];
+        } catch (\Throwable $th) {
+            return [
+                'error' => $th->getMessage()
             ];
         }
     }

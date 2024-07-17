@@ -16,7 +16,7 @@ class Company extends Model
         return $this->hasOne(CompanyPurchase::class);
     }
 
-    public function companyBalance()
+    public function balance()
     {
         return $this->hasOne(CompanyBalance::class);
     }
