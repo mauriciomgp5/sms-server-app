@@ -44,6 +44,10 @@ class CampaignResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            //only registres by auth user and relat is company.users
+            ->query(Campaign::query()->whereHas('company.users', function (Builder $query) {
+                $query->where('users.id', auth()->id());
+            }))
             ->columns([
                 Tables\Columns\TextColumn::make('company_id')
                     ->numeric()

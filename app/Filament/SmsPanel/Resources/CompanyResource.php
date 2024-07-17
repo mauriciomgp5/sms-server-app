@@ -138,6 +138,9 @@ class CompanyResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->query(Company::query()->whereHas('users', function (Builder $query) {
+                $query->where('user_id', auth()->id());
+            }))
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->searchable(),

@@ -46,6 +46,9 @@ class CompanyPurchaseResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
+            ->query(CompanyPurchase::query()->whereHas('company.users', function (Builder $query) {
+                $query->where('users.id', auth()->id());
+            }))
             ->columns([
                 Tables\Columns\TextColumn::make('description')
                     ->label('Descrição')
@@ -53,6 +56,10 @@ class CompanyPurchaseResource extends Resource
                 Tables\Columns\TextColumn::make('amount')
                     ->label('Valor')
                     ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('status')
+                    ->label('Status')
+                    ->badge()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Criado em')
