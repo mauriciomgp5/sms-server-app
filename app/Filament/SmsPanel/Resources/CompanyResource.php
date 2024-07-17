@@ -86,55 +86,54 @@ class CompanyResource extends Resource
                         Forms\Components\TextInput::make('address_number')
                             ->label('Número')
 
-                            ->required(),
-                        Forms\Components\TextInput::make('complement')
+                                    ->required(),
+                                Forms\Components\TextInput::make('complement')
 
-                            ->label('Complemento'),
-                        Forms\Components\TextInput::make('neighborhood')
+                                    ->label('Complemento'),
+                                Forms\Components\TextInput::make('neighborhood')
 
-                            ->label('Bairro')
-                            ->required(),
-                        Forms\Components\TextInput::make('city')
+                                    ->label('Bairro')
+                                    ->required(),
+                                Forms\Components\TextInput::make('city')
 
-                            ->label('Cidade')
-                            ->required(),
-                        Forms\Components\Select::make('state')
+                                    ->label('Cidade')
+                                    ->required(),
+                                Forms\Components\Select::make('state')
 
-                            ->label('Estado')
-                            ->options([
-                                'AC' => 'Acre',
-                                'AL' => 'Alagoas',
-                                'AP' => 'Amapá',
-                                'AM' => 'Amazonas',
-                                'BA' => 'Bahia',
-                                'CE' => 'Ceará',
-                                'DF' => 'Distrito Federal',
-                                'ES' => 'Espírito Santo',
-                                'GO' => 'Goiás',
-                                'MA' => 'Maranhão',
-                                'MT' => 'Mato Grosso',
-                                'MS' => 'Mato Grosso do Sul',
-                                'MG' => 'Minas Gerais',
-                                'PA' => 'Pará',
-                                'PB' => 'Paraíba',
-                                'PR' => 'Paraná',
-                                'PE' => 'Pernambuco',
-                                'PI' => 'Piauí',
-                                'RJ' => 'Rio de Janeiro',
-                                'RN' => 'Rio Grande do Norte',
-                                'RS' => 'Rio Grande do Sul',
-                                'RO' => 'Rondônia',
-                                'RR' => 'Roraima',
-                                'SC' => 'Santa Catarina',
-                                'SP' => 'São Paulo',
-                                'SE' => 'Sergipe',
-                                'TO' => 'Tocantins',
-                            ])
-                            ->required(),
-                    ])->columns(4)
-            ])->columns([
-                'default' => 4,
-                'sm' => 1
+                                    ->label('Estado')
+                                    ->options([
+                                        'AC' => 'Acre',
+                                        'AL' => 'Alagoas',
+                                        'AP' => 'Amapá',
+                                        'AM' => 'Amazonas',
+                                        'BA' => 'Bahia',
+                                        'CE' => 'Ceará',
+                                        'DF' => 'Distrito Federal',
+                                        'ES' => 'Espírito Santo',
+                                        'GO' => 'Goiás',
+                                        'MA' => 'Maranhão',
+                                        'MT' => 'Mato Grosso',
+                                        'MS' => 'Mato Grosso do Sul',
+                                        'MG' => 'Minas Gerais',
+                                        'PA' => 'Pará',
+                                        'PB' => 'Paraíba',
+                                        'PR' => 'Paraná',
+                                        'PE' => 'Pernambuco',
+                                        'PI' => 'Piauí',
+                                        'RJ' => 'Rio de Janeiro',
+                                        'RN' => 'Rio Grande do Norte',
+                                        'RS' => 'Rio Grande do Sul',
+                                        'RO' => 'Rondônia',
+                                        'RR' => 'Roraima',
+                                        'SC' => 'Santa Catarina',
+                                        'SP' => 'São Paulo',
+                                        'SE' => 'Sergipe',
+                                        'TO' => 'Tocantins',
+                                    ])
+                                    ->required(),
+                            ])->columns(4)
+                    ]),
+
             ]);
     }
 
