@@ -187,7 +187,7 @@ class SmsGatewayService
         return $slot;
     }
 
-    public function sendSms($message, $phoneNumbers)
+    public function sendSms($message, $phoneNumbers, $companyId)
     {
         try {
             // Obtém o próximo slot disponível
@@ -211,6 +211,7 @@ class SmsGatewayService
             // Registrar o envio no banco de dados
             foreach ($phoneNumbers as $phone) {
                 $smsLog = SmsLog::create([
+                    'company_id' => $companyId,
                     'external_id' => $data['id'],
                     'gateway_id' => $slot->gateway_id,
                     'slot_id' => $slot->id,

@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\SmsPanel\Pages\Dashboard;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
@@ -33,13 +34,10 @@ class SmsPanelPanelProvider extends PanelProvider
             ->discoverResources(in: app_path('Filament/SmsPanel/Resources'), for: 'App\\Filament\\SmsPanel\\Resources')
             ->discoverPages(in: app_path('Filament/SmsPanel/Pages'), for: 'App\\Filament\\SmsPanel\\Pages')
             ->pages([
-                Pages\Dashboard::class,
+                Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/SmsPanel/Widgets'), for: 'App\\Filament\\SmsPanel\\Widgets')
-            ->widgets([
-                Widgets\AccountWidget::class,
-                Widgets\FilamentInfoWidget::class,
-            ])
+            ->widgets([])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
