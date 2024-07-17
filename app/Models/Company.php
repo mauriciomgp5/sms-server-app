@@ -10,7 +10,22 @@ class Company extends Model
 {
     use HasFactory;
 
-    public function user(): HasOne
+    public function companyPurchase()
+    {
+        return $this->hasOne(CompanyPurchase::class);
+    }
+
+    public function companyBalance()
+    {
+        return $this->hasOne(CompanyBalance::class);
+    }
+
+    public function contacts()
+    {
+        return $this->hasMany(Contact::class);
+    }
+
+    public function users()
     {
         return $this->hasOne(User::class);
     }
