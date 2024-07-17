@@ -4,6 +4,7 @@ namespace App\Filament\SmsPanel\Resources;
 
 use App\Filament\SmsPanel\Resources\CompanyPurchaseResource\Pages;
 use App\Filament\SmsPanel\Resources\CompanyPurchaseResource\RelationManagers;
+use App\Models\Company;
 use App\Models\CompanyPurchase;
 use Filament\Forms;
 use Filament\Forms\Form;
@@ -16,6 +17,7 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 class CompanyPurchaseResource extends Resource
 {
     protected static ?string $label = 'Compra';
+
     protected static ?string $model = CompanyPurchase::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
@@ -24,14 +26,20 @@ class CompanyPurchaseResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('description')
-                    ->label('')
+                Forms\Components\Select::make('company_id')
+                    ->label('Empresa')
+                    ->options(Company::whereHas('user')->pluck('name', 'id')->toArray())
+                    ->required(),
+                Forms\Components\Select::make('amount')
+                    ->label('Investimento')
                     ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('amount')
-                    ->required()
-                    ->numeric(),
-                Forms\Components\TextInput::make('data'),
+                    ->options([
+                        '50' => 'R$ 50,00',
+                        '100' => 'R$ 100,00',
+                        '200' => 'R$ 200,00',
+                        '500' => 'R$ 500,00',
+                        '1000' => 'R$ 1.000,00',
+                    ]),
             ]);
     }
 
@@ -39,23 +47,21 @@ class CompanyPurchaseResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('company_id')
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('user_id')
-                    ->numeric()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('description')
+                    ->label('Descrição')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('amount')
+                    ->label('Valor')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
+                    ->label('Criado em')
+                    ->dateTime('d/m/Y H:i:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
                 Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
+                    ->label('Atualizado em')
+                    ->dateTime('d/m/Y H:i:s')
                     ->sortable()
                     ->toggleable(isToggledHiddenByDefault: true),
             ])

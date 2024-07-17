@@ -25,6 +25,8 @@ class SmsPanelPanelProvider extends PanelProvider
         return $panel
             ->id('smsPanel')
             ->path('painel-sms')
+            ->login()
+            ->registration()
             ->colors([
                 'primary' => Color::Amber,
             ])
