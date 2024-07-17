@@ -2,18 +2,21 @@
 
 namespace App\Filament\SmsPanel\Resources;
 
-use App\Filament\SmsPanel\Resources\CompanyResource\Pages;
-use App\Filament\SmsPanel\Resources\CompanyResource\RelationManagers;
-use App\Models\Company;
 use Filament\Forms;
-use Filament\Forms\Form;
+use Filament\Tables;
+use App\Models\Company;
 use Filament\Forms\Get;
 use Filament\Forms\Set;
-use Filament\Resources\Resource;
-use Filament\Tables;
+use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Filament\Resources\Resource;
 use Illuminate\Database\Eloquent\Builder;
+use Leandrocfe\FilamentPtbrFormFields\Cep;
+use Leandrocfe\FilamentPtbrFormFields\Document;
+use Leandrocfe\FilamentPtbrFormFields\PhoneNumber;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\SmsPanel\Resources\CompanyResource\Pages;
+use App\Filament\SmsPanel\Resources\CompanyResource\RelationManagers;
 
 class CompanyResource extends Resource
 {
@@ -29,8 +32,9 @@ class CompanyResource extends Resource
                 Forms\Components\TextInput::make('name')
                     ->required()
                     ->maxLength(255),
-                Forms\Components\TextInput::make('primary_document')
+                Document::make('primary_document')
                     ->label('Cpf/Cnpj')
+                    ->dynamic()
                     ->required()
                     ->maxLength(255),
                 Forms\Components\TextInput::make('secondary_document')
@@ -49,20 +53,37 @@ class CompanyResource extends Resource
                     ->label('Lista de telefones')
                     ->addActionLabel('Novo')
                     ->schema([
-                        Forms\Components\TextInput::make('phones')
+                        PhoneNumber::make('phone')
                             ->label('Telefone')
                             ->tel(),
                     ]),
                 Forms\Components\Fieldset::make('Endereço')
                     ->schema([
-                        Forms\Components\TextInput::make('zip_code')
-                            ->mask('99999-999')
-                            ->live(onBlur: true),
+                        Cep::make('zip_code')
+                            ->viaCep(
+                                mode: 'suffix', // Determines whether the action should be appended to (suffix) or prepended to (prefix) the cep field, or not included at all (none).
+                                errorMessage: 'CEP inválido.', // Error message to display if the CEP is invalid.
+
+                                /**
+                                 * Other form fields that can be filled by ViaCep.
+                                 * The key is the name of the Filament input, and the value is the ViaCep attribute that corresponds to it.
+                                 * More information: https://viacep.com.br/
+                                 */
+                                setFields: [
+                                    'address' => 'logradouro',
+                                    'address_number' => 'numero',
+                                    'complement' => 'complemento',
+                                    'neighborhood' => 'bairro',
+                                    'city' => 'localidade',
+                                    'state' => 'uf'
+                                ]
+                            ),
+
                         Forms\Components\TextInput::make('address')
                             ->label('Endereço')
 
                             ->required(),
-                        Forms\Components\TextInput::make('number')
+                        Forms\Components\TextInput::make('address_number')
                             ->label('Número')
 
                             ->required(),
