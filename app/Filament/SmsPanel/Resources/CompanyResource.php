@@ -26,94 +26,108 @@ class CompanyResource extends Resource
     {
         return $form
             ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('primary_document')
-                    ->label('Cpf/Cnpj')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('secondary_document')
-                    ->label('RG/IE')
-                    ->required()
-                    ->maxLength(255),
-                Forms\Components\TextInput::make('email')
-                    ->columnSpan(2)
-                    ->email()
-                    ->maxLength(255),
-                Forms\Components\FileUpload::make('logo')
-                    ->directory('logos'),
-                Forms\Components\TextInput::make('website')
-                    ->maxLength(255),
-                Forms\Components\Repeater::make('phones')
-                    ->label('Lista de telefones')
-                    ->addActionLabel('Novo')
+                Forms\Components\Grid::make([
+                    'default' => 1,
+                    'sm' => 2,
+                    'md' => 3,
+                    'lg' => 4,
+                    'xl' => 6,
+                    '2xl' => 8,
+                ])
                     ->schema([
-                        Forms\Components\TextInput::make('phones')
-                            ->label('Telefone')
-                            ->tel(),
-                    ]),
-                Forms\Components\Fieldset::make('Endereço')
-                    ->schema([
-                        Forms\Components\TextInput::make('zip_code')
-                            ->mask('99999-999')
-                            ->live(onBlur: true),
-                        Forms\Components\TextInput::make('address')
-                            ->label('Endereço')
-
-                            ->required(),
-                        Forms\Components\TextInput::make('number')
-                            ->label('Número')
-
-                            ->required(),
-                        Forms\Components\TextInput::make('complement')
-
-                            ->label('Complemento'),
-                        Forms\Components\TextInput::make('neighborhood')
-
-                            ->label('Bairro')
-                            ->required(),
-                        Forms\Components\TextInput::make('city')
-
-                            ->label('Cidade')
-                            ->required(),
-                        Forms\Components\Select::make('state')
-
-                            ->label('Estado')
-                            ->options([
-                                'AC' => 'Acre',
-                                'AL' => 'Alagoas',
-                                'AP' => 'Amapá',
-                                'AM' => 'Amazonas',
-                                'BA' => 'Bahia',
-                                'CE' => 'Ceará',
-                                'DF' => 'Distrito Federal',
-                                'ES' => 'Espírito Santo',
-                                'GO' => 'Goiás',
-                                'MA' => 'Maranhão',
-                                'MT' => 'Mato Grosso',
-                                'MS' => 'Mato Grosso do Sul',
-                                'MG' => 'Minas Gerais',
-                                'PA' => 'Pará',
-                                'PB' => 'Paraíba',
-                                'PR' => 'Paraná',
-                                'PE' => 'Pernambuco',
-                                'PI' => 'Piauí',
-                                'RJ' => 'Rio de Janeiro',
-                                'RN' => 'Rio Grande do Norte',
-                                'RS' => 'Rio Grande do Sul',
-                                'RO' => 'Rondônia',
-                                'RR' => 'Roraima',
-                                'SC' => 'Santa Catarina',
-                                'SP' => 'São Paulo',
-                                'SE' => 'Sergipe',
-                                'TO' => 'Tocantins',
+                        Forms\Components\TextInput::make('name')
+                            ->columnSpan(2)
+                            ->label('Nome')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('primary_document')
+                            ->columns([
+                                'default' => 4,
+                                'sm' => 1
                             ])
-                            ->required(),
-                    ])->columns(4)
-            ])->columns([
-                'default' => 4,
-                'sm' => 1
+                            ->label('Cpf/Cnpj')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('secondary_document')
+                            ->label('RG/IE')
+                            ->required()
+                            ->maxLength(255),
+                        Forms\Components\TextInput::make('email')
+                            ->columnSpan(2)
+                            ->email()
+                            ->maxLength(255),
+                        Forms\Components\FileUpload::make('logo')
+                            ->directory('logos'),
+                        Forms\Components\TextInput::make('website')
+                            ->maxLength(255),
+                        Forms\Components\Repeater::make('phones')
+                            ->label('Lista de telefones')
+                            ->addActionLabel('Novo')
+                            ->schema([
+                                Forms\Components\TextInput::make('phones')
+                                    ->label('Telefone')
+                                    ->tel(),
+                            ]),
+                        Forms\Components\Fieldset::make('Endereço')
+                            ->schema([
+                                Forms\Components\TextInput::make('zip_code')
+                                    ->mask('99999-999')
+                                    ->live(onBlur: true),
+                                Forms\Components\TextInput::make('address')
+                                    ->label('Endereço')
+
+                                    ->required(),
+                                Forms\Components\TextInput::make('number')
+                                    ->label('Número')
+
+                                    ->required(),
+                                Forms\Components\TextInput::make('complement')
+
+                                    ->label('Complemento'),
+                                Forms\Components\TextInput::make('neighborhood')
+
+                                    ->label('Bairro')
+                                    ->required(),
+                                Forms\Components\TextInput::make('city')
+
+                                    ->label('Cidade')
+                                    ->required(),
+                                Forms\Components\Select::make('state')
+
+                                    ->label('Estado')
+                                    ->options([
+                                        'AC' => 'Acre',
+                                        'AL' => 'Alagoas',
+                                        'AP' => 'Amapá',
+                                        'AM' => 'Amazonas',
+                                        'BA' => 'Bahia',
+                                        'CE' => 'Ceará',
+                                        'DF' => 'Distrito Federal',
+                                        'ES' => 'Espírito Santo',
+                                        'GO' => 'Goiás',
+                                        'MA' => 'Maranhão',
+                                        'MT' => 'Mato Grosso',
+                                        'MS' => 'Mato Grosso do Sul',
+                                        'MG' => 'Minas Gerais',
+                                        'PA' => 'Pará',
+                                        'PB' => 'Paraíba',
+                                        'PR' => 'Paraná',
+                                        'PE' => 'Pernambuco',
+                                        'PI' => 'Piauí',
+                                        'RJ' => 'Rio de Janeiro',
+                                        'RN' => 'Rio Grande do Norte',
+                                        'RS' => 'Rio Grande do Sul',
+                                        'RO' => 'Rondônia',
+                                        'RR' => 'Roraima',
+                                        'SC' => 'Santa Catarina',
+                                        'SP' => 'São Paulo',
+                                        'SE' => 'Sergipe',
+                                        'TO' => 'Tocantins',
+                                    ])
+                                    ->required(),
+                            ])->columns(4)
+                    ]),
+
             ]);
     }
 
