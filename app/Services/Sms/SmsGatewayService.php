@@ -2,6 +2,9 @@
 
 namespace App\Services\Sms;
 
+use App\Enums\Config\TypeEnum;
+use App\Models\Company;
+use App\Models\Config;
 use App\Models\SmsLog;
 use App\Models\SmsSlot;
 use Illuminate\Support\Facades\Http;
@@ -10,14 +13,16 @@ class SmsGatewayService
 {
     protected $request;
 
-    public function __construct($gateway)
+    public function __construct($gateway = null)
     {
-        $urlBase = "{$gateway->ip_address}:{$gateway->port}";
+        if ($gateway) {
+            $urlBase = "{$gateway->ip_address}:{$gateway->port}";
 
-        $this->request = Http::withBasicAuth($gateway->username, $gateway->password)
-            ->withHeaders([
-                'Content-Type' => 'application/json',
-            ])->baseUrl($urlBase);
+            $this->request = Http::withBasicAuth($gateway->username, $gateway->password)
+                ->withHeaders([
+                    'Content-Type' => 'application/json',
+                ])->baseUrl($urlBase);
+        }
     }
 
     public function sendSmsBySlot($message, $phoneNumbers, $slot)
@@ -176,28 +181,46 @@ class SmsGatewayService
     {
         // Seleciona o próximo slot que não atingiu o limite de envios mensais
         $slot = SmsSlot::where('is_active', 1)
-            ->where('sent_count', '<', 'max_sends')
+            ->whereColumn('sent_count', '<', 'max_sends')
             ->orderBy('updated_at', 'asc')
             ->first();
 
         if (!$slot) {
-            throw new \Exception('No available slots for sending SMS.');
+            throw new \Exception('Nenhum slot disponível');
         }
 
         return $slot;
     }
 
-    public function sendSms($message, $phoneNumbers, $companyId)
+    public function sendSms(string $message, $phoneNumbers, Company $company, $user)
     {
         try {
+            $config = Config::where('data->type', TypeEnum::Pricing)->first();
+            if (!$config) {
+                return response()->json(['error' => 'Preços não configurado'], 500);
+            }
             // Obtém o próximo slot disponível
             $slot = $this->getNextAvailableSlot();
 
-            $response = $this->request
+            $urlBase = "{$slot->gateway->ip_address}:{$slot->gateway->port}";
+
+            $request = Http::withBasicAuth($slot->gateway->username, $slot->gateway->password)
+                ->withHeaders([
+                    'Content-Type' => 'application/json',
+                ])->baseUrl($urlBase);
+            $numbersValidate = [];
+            foreach ($phoneNumbers as $phone) {
+                $phone = preg_replace('/[^0-9]/', '', $phone);
+                if (strlen($phone) == 11) {
+                    $phone = '55' . $phone;
+                }
+                $numbersValidate[] = $phone;
+            }
+            $response = $request
                 ->post('message', [
                     'simNumber' => $slot->slot_number,
                     'message' => $message,
-                    'phoneNumbers' => $phoneNumbers,
+                    'phoneNumbers' => $numbersValidate,
                     'withDeliveryReport' => true,
                 ]);
 
@@ -205,25 +228,27 @@ class SmsGatewayService
                 info($response->body());
                 $data = $response->json();
             } else {
-                return response()->json(['error' => 'Failed to send SMS'], $response->status());
+                return response()->json(['error' => 'Erro: ' . $response->body()], $response->status());
             }
 
             // Registrar o envio no banco de dados
             foreach ($phoneNumbers as $phone) {
                 $smsLog = SmsLog::create([
-                    'company_id' => $companyId,
+                    'company_id' => $company->id,
                     'external_id' => $data['id'],
                     'gateway_id' => $slot->gateway_id,
                     'slot_id' => $slot->id,
                     'phone' => $phone,
                     'message' => $message,
+                    'price' => $config->data['sale_price'],
+                    'cost' => $config->data['sale_cost'],
+                    'user_id' => $user->id,
                 ]);
                 // Atualizar contagem de envios
                 $slot->increment('sent_count');
+                $company->balance->decrement('balance', $config->data['sale_price']);
             }
 
-            // Atualizar o timestamp do último envio
-            $slot->update(['last_sent_at' => now()]);
 
             return [
                 'response' => $response->body(),

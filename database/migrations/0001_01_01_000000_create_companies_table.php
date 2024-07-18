@@ -20,10 +20,14 @@ return new class extends Migration
             $table->string('logo')->nullable();
             $table->string('website')->nullable();
             $table->json('phones')->nullable();
+            $table->string('zip_code')->nullable();
             $table->string('address')->nullable();
+            $table->string('address_number')->nullable();
+            $table->string('complement')->nullable();
+            $table->string('neighborhood')->nullable();
             $table->string('city')->nullable();
             $table->string('state')->nullable();
-            $table->string('zip')->nullable();
+            $table->json('data')->nullable();
             $table->timestamps();
         });
     }

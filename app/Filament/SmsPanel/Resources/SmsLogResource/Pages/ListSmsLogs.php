@@ -4,6 +4,7 @@ namespace App\Filament\SmsPanel\Resources\SmsLogResource\Pages;
 
 use App\Filament\SmsPanel\Resources\SmsLogResource;
 use App\Models\Company;
+use App\Services\Sms\SmsGatewayService;
 use Filament\Actions;
 use Filament\Forms;
 use Filament\Notifications\Notification;
@@ -43,7 +44,23 @@ class ListSmsLogs extends ListRecords
                 ->action(function ($data) {
                     $company = Company::find($data['company_id']);
                     if ($company->balance?->balance > 0) {
-                        // send sms code here
+                        $sgs = new SmsGatewayService();
+                        $resp = $sgs->sendSms($data['message'], [$data['phone']], $company, auth()->user());
+
+                        if (isset($resp['error'])) {
+                            Notification::make()
+                                ->title('Erro ao enviar SMS')
+                                ->body($resp['error'])
+                                ->danger()
+                                ->send();
+                            return;
+                        }
+
+                        Notification::make()
+                            ->title('SMS enviado')
+                            ->body('A mensagem foi enviada para ' . $data['phone'])
+                            ->success()
+                            ->send();
                     } else {
                         Notification::make()
                             ->title('Saldo insuficiente')

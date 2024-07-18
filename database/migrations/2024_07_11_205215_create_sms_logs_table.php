@@ -21,6 +21,8 @@ return new class extends Migration
             $table->string('phone');
             $table->text('message');
             $table->string('status')->default('pending');
+            $table->decimal('price', 10, 2)->default(0);
+            $table->decimal('cost', 10, 2)->default(0);
             $table->timestamp('sent_at')->nullable();
             $table->timestamps();
         });

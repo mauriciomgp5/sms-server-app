@@ -2,20 +2,21 @@
 
 namespace App\Filament\Resources;
 
-use App\Enums\Config\TypeEnum;
-use App\Filament\Resources\ConfigResource\Pages;
-use App\Filament\Resources\ConfigResource\RelationManagers;
-use App\Models\Config;
 use Filament\Forms;
+use Filament\Tables;
+use App\Models\Config;
+use Filament\Forms\Form;
+use Filament\Tables\Table;
+use App\Enums\Config\TypeEnum;
+use Filament\Resources\Resource;
+use Illuminate\Support\Facades\DB;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Form;
-use Filament\Resources\Resource;
-use Filament\Tables;
-use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Leandrocfe\FilamentPtbrFormFields\Money;
+use App\Filament\Resources\ConfigResource\Pages;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
+use App\Filament\Resources\ConfigResource\RelationManagers;
 
 class ConfigResource extends Resource
 {
@@ -29,11 +30,13 @@ class ConfigResource extends Resource
             ->schema([
                 Select::make('data.type')
                     ->options(TypeEnum::class)
-                    ->unique(ignoreRecord: true)
-                    ->label('Nome'),
+                    ->label('Nome')
+                    ->unique(ignoreRecord: true, column: 'data->type'),
+
                 Money::make('data.sale_cost')
                     ->label('Custo')
                     ->required(),
+
                 Money::make('data.sale_price')
                     ->label('Preço')
                     ->required(),

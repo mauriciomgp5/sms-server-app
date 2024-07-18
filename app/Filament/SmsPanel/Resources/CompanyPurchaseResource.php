@@ -28,7 +28,9 @@ class CompanyPurchaseResource extends Resource
             ->schema([
                 Forms\Components\Select::make('company_id')
                     ->label('Empresa')
-                    ->options(Company::whereHas('user')->pluck('name', 'id')->toArray())
+                    ->options(Company::whereHas('users', function (Builder $query) {
+                        $query->where('users.id', auth()->id());
+                    })->pluck('name', 'id'))
                     ->required(),
                 Forms\Components\Select::make('amount')
                     ->label('Investimento')

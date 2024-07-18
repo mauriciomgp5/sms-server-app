@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('company_purchases', function (Blueprint $table) {
             $table->id();
+            $table->string('status')->default('pending');
             $table->foreignId('company_id')->constrained('companies')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('users')->onDelete('cascade');
             $table->string('description');

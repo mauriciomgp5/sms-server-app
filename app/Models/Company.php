@@ -11,6 +11,11 @@ class Company extends Model
 {
     use HasFactory;
 
+    protected $casts = [
+        'data' => 'array',
+        'phones' => 'array',
+    ];
+
     public function companyPurchase()
     {
         return $this->hasOne(CompanyPurchase::class);

@@ -31,6 +31,7 @@ class CompanyPurchaseResource extends Resource
                     ->required()
                     ->searchable()
                     ->options(fn () => \App\Models\Company::pluck('name', 'id')),
+                    
                 Forms\Components\Select::make('user_id')
                     ->label('Usuário')
                     ->required()
