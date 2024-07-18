@@ -12,8 +12,9 @@ class SmsBalance extends BaseWidget
     {
         return [
             Stat::make('Enviados', SmsLog::where('status', 'sent')->where('company_id', session('company')?->id)->count()),
-            Stat::make('Respostas', '21%'),
-            Stat::make('Saldo', 'R$ ' . auth()->user()->companies->first()->balance->balance),
+            //calculo das respostas em porcentagem
+            Stat::make('Respostas', SmsLog::where('status', 'response')->where('company_id', session('company')?->id)->count()),
+            Stat::make('Saldo', auth()->user()->companies->first()?->balance->balance ? 'R$ ' . number_format(auth()->user()->companies->first()?->balance->balance, 2, ',', '.') : 'R$ 0,00'),
         ];
     }
 }

@@ -30,7 +30,7 @@ class Dashboard extends BaseDashboard
                                     fn ($query) =>
                                     $query->where('user_id', auth()->id())
                                 )->pluck('name', 'id')
-                            )->default(session('company')->id),
+                            )->default(session('company')?->id),
                         DatePicker::make('startDate')
                             ->displayFormat('d/m/Y')
                             ->label('Data Inicial')
