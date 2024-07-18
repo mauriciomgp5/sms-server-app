@@ -21,6 +21,13 @@ return new class extends Migration
             $table->rememberToken();
             $table->timestamps();
         });
+        
+        Schema::create('company_user', function (Blueprint $table) {
+            $table->foreignId('company_id')->index();
+            $table->foreignId('user_id')->index();
+            $table->primary(['company_id', 'user_id']);
+            $table->string('role')->default('user');
+        });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
             $table->string('email')->primary();
