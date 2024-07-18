@@ -18,10 +18,11 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
+            $table->string('type')->default('user');
             $table->rememberToken();
             $table->timestamps();
         });
-        
+
         Schema::create('company_user', function (Blueprint $table) {
             $table->foreignId('company_id')->index();
             $table->foreignId('user_id')->index();

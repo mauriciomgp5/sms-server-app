@@ -9,9 +9,14 @@ use Filament\Forms\Get;
 use Filament\Forms\Set;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 use Filament\Resources\Resource;
+use Filament\Support\Enums\FontWeight;
+use Filament\Notifications\Notification;
 use Illuminate\Database\Eloquent\Builder;
+use Filament\Notifications\Actions\Action;
 use Leandrocfe\FilamentPtbrFormFields\Cep;
+use Filament\Infolists\Components\TextEntry;
 use Leandrocfe\FilamentPtbrFormFields\Document;
 use Leandrocfe\FilamentPtbrFormFields\PhoneNumber;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -165,6 +170,45 @@ class CompanyResource extends Resource
                 //
             ])
             ->actions([
+                Tables\Actions\Action::make('create-token')
+                    ->label('Criar token')
+                    ->icon('heroicon-o-key')
+
+                    ->modal()
+                    ->modalDescription('Caso exista um token de acesso, ele será substituído.')
+                    ->requiresConfirmation()
+                    ->modalWidth('md')
+                    ->action(function ($record) {
+                        $userApi = $record->users()->where('type', 'api')->first();
+                        if (!$userApi) {
+                            $userApi = $record->users()->create([
+                                'name' => 'API',
+                                'email' => 'api@' . $record->primary_document,
+                                'password' => bcrypt(Str::random(10)),
+                                'type' => 'api',
+                            ]);
+                        }
+                        Notification::make()
+                            ->title('Token criado')
+                            ->body('O token de acesso da API é: ' . $userApi->createToken('api')->plainTextToken)
+                            ->success()
+                            ->persistent()
+                            ->actions([
+                                Action::make('copy')
+                                    ->button()
+                                    ->label('Copiar token')
+                                    ->icon('heroicon-o-clipboard')
+                                    ->action(function () use ($userApi) {
+                                        Notification::make()
+                                            ->title('Token copiado')
+                                            ->body('O token de acesso da API foi copiado para a área de transferência.')
+                                            ->success()
+                                            ->send();
+                                    }),
+                            ])
+                            ->send();
+                    }),
+
                 Tables\Actions\EditAction::make(),
             ])
             ->bulkActions([
