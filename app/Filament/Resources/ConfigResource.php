@@ -2,10 +2,13 @@
 
 namespace App\Filament\Resources;
 
+use App\Enums\Config\TypeEnum;
 use App\Filament\Resources\ConfigResource\Pages;
 use App\Filament\Resources\ConfigResource\RelationManagers;
 use App\Models\Config;
 use Filament\Forms;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
 use Filament\Tables;
@@ -24,6 +27,10 @@ class ConfigResource extends Resource
     {
         return $form
             ->schema([
+                Select::make('data.type')
+                    ->options(TypeEnum::class)
+                    ->unique(ignoreRecord: true)
+                    ->label('Nome'),
                 Money::make('data.sale_cost')
                     ->label('Custo')
                     ->required(),
@@ -37,13 +44,20 @@ class ConfigResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('data.price_cost')
-                    ->label('Custo')
-                    ->money()
+                Tables\Columns\TextColumn::make('data.type')
+                    ->label('Tipo')
+                    ->formatStateUsing(function ($state) {
+                        return TypeEnum::from($state)->getLabel();
+                    })
+                    ->badge()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('data.price_sale')
-                    ->label('Preço')
-                    ->money()
+                Tables\Columns\TextColumn::make('data.sale_cost')
+                    ->label('Custo')
+                    ->money('BRL')
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('data.sale_price')
+                    ->label('Venda')
+                    ->money('BRL')
                     ->sortable(),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Atualizado em')
