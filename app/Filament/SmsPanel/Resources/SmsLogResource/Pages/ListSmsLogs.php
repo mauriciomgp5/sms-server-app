@@ -31,7 +31,7 @@ class ListSmsLogs extends ListRecords
                         })->pluck('name', 'id'))
                         ->default(Company::whereHas('users', function ($query) {
                             $query->where('user_id', auth()->id());
-                        })->first()->id)
+                        })->first()?->id)
                         ->searchable()
                         ->required(),
                     PhoneNumber::make('phone')

@@ -24,6 +24,7 @@ class Dashboard extends BaseDashboard
                         Select::make('selectCompany')
                             ->label('Empresa Ativa')
                             ->selectablePlaceholder(false)
+                            ->afterStateUpdated(fn ($state) => Session::put('company', Company::find($state['selectCompany'])))
                             ->options(
                                 Company::whereHas(
                                     'users',
