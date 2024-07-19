@@ -198,13 +198,14 @@ class CompanyResource extends Resource
                                     ->button()
                                     ->label('Copiar token')
                                     ->icon('heroicon-o-clipboard')
-                                    ->action(function () use ($userApi) {
-                                        Notification::make()
-                                            ->title('Token copiado')
-                                            ->body('O token de acesso da API foi copiado para a área de transferência.')
-                                            ->success()
-                                            ->send();
+                                    ->action(function (){
+                                        dd('oi');
                                     }),
+
+                                    Action::make('close')
+                                    ->label('Fechar')
+                                        ->color('gray')
+                                        ->close(),
                             ])
                             ->send();
                     }),
