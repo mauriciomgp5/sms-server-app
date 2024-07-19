@@ -14,7 +14,7 @@ services:
   # Your original mysql service
   mysql:
     container_name: ${APP_NAME}_mysql
-    image: 'mysql/mysql-server:8.0'
+    image: "mysql/mysql-server:8.0"
     environment:
       MYSQL_ROOT_PASSWORD: root
       MYSQL_DATABASE: ${DB_DATABASE}
@@ -32,22 +32,11 @@ services:
   # Your original redis service
   redis:
     container_name: ${APP_NAME}_redis
-    image: 'redis:alpine'
+    image: "redis:alpine"
     volumes:
       - app-redis:/data/redis
     networks:
       - app-network
-
-  # Your original meilisearch service
-  meilisearch:
-    container_name: ${APP_NAME}_meilisearch
-    image: 'getmeili/meilisearch:latest'
-    volumes:
-      - 'app-meilisearch:/data.ms'
-    networks:
-      - app-network
-    environment:
-      - MEILI_MASTER_KEY=MASTER_KEY
 
 # Combine volumes from both files
 volumes:
