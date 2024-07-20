@@ -114,7 +114,13 @@ class SmsGatewayService
 
     public function checkConnection()
     {
-        $response = $this->request->get('/');
+        try {
+            $response = $this->request->get('/');
+        } catch (\Throwable $th) {
+            return [
+                'error' => $th->getMessage(),
+            ];
+        }
 
         if ($response->successful()) {
             return $response->json();
