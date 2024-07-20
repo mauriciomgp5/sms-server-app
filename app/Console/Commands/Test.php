@@ -39,8 +39,17 @@ class Test extends Command
             $this->runProcess('php artisan optimize', 'Optimizing application', 'Application optimized');
             
             $this->info('App updated successfully');
+            Notification::make()
+            ->success()
+            ->title('Sistema atualizado')
+            ->send();
         } catch (\Throwable $th) {
             $this->error('Update process failed: ' . $th->getMessage());
+            Notification::make()
+            ->error()
+            ->title('Falha ao atualizar o sistema')
+            ->body($th->getMessage())
+            ->send();
         }
     }
 
