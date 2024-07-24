@@ -24,8 +24,6 @@ class ListConfigs extends ListRecords
                     // Executar o script de atualização
                     exec('/var/www/update.sh', $output, $return_var);
 
-                    dd($output, $return_var);
-
                     // Verificar o status da execução
                     if ($return_var === 0) {
                         Notification::make()
