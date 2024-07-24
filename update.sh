@@ -27,7 +27,7 @@ CONTAINER_NAME=$DEPLOY_CONTAINER
 APP_ENV=$APP_ENV
 
 # Verificar se as variáveis estão definidas
-if [ -z "$WEB_ROOT" ] || [ -z "$HOST_USER" ] || [ -z "$HOST_IP" ] || [ -z "$CONTAINER_NAME" ]; then
+if [ -z "$WEB_ROOT" ] || [ -z "$HOST_USER" ] || [ -z "$HOST_IP" ]; then
   echo "One or more environment variables are missing." >> $LOG_FILE
   exit 1
 fi
@@ -41,15 +41,26 @@ else
   COMPOSER_FLAGS="--no-interaction --prefer-dist --optimize-autoloader"
 fi
 
-# Comandos para executar no host
-COMMANDS=$(cat << EOF
-  docker exec -i $CONTAINER_NAME bash -c "cd $WEB_ROOT && git checkout $BRANCH && git pull origin $BRANCH && \
-  echo 'Instalando dependências do Composer...' && composer install $COMPOSER_FLAGS && \
-  echo 'Executando migrações...' && php artisan migrate --force && \
-  echo 'Otimização da aplicação...' && php artisan optimize:clear && php artisan optimize && \
-  echo 'Deploy concluído com sucesso!'"
+# Comandos a serem executados
+if [ -n "$CONTAINER_NAME" ]; then
+  COMMANDS=$(cat << EOF
+    docker exec -i $CONTAINER_NAME bash -c "cd $WEB_ROOT && git checkout $BRANCH && git pull origin $BRANCH && \
+    echo 'Instalando dependências do Composer...' && composer install $COMPOSER_FLAGS && \
+    echo 'Executando migrações...' && php artisan migrate --force && \
+    echo 'Otimização da aplicação...' && php artisan optimize:clear && php artisan optimize && \
+    echo 'Deploy concluído com sucesso!'"
 EOF
-)
+  )
+else
+  COMMANDS=$(cat << EOF
+    cd $WEB_ROOT && git checkout $BRANCH && git pull origin $BRANCH && \
+    echo 'Instalando dependências do Composer...' && composer install $COMPOSER_FLAGS && \
+    echo 'Executando migrações...' && php artisan migrate --force && \
+    echo 'Otimização da aplicação...' && php artisan optimize:clear && php artisan optimize && \
+    echo 'Deploy concluído com sucesso!'
+EOF
+  )
+fi
 
 # Executar comandos no host via SSH
 echo "Conectando ao host $HOST_IP como $HOST_USER" >> $LOG_FILE
