@@ -1,37 +1,43 @@
 #!/bin/bash
 
-# Define variáveis
-BRANCH="main"
-WEB_ROOT="/var/www"
-
 # Navegue até o diretório do projeto
-cd $WEB_ROOT || exit
+cd /var/www || exit
 
-# Faça o pull do repositório
-echo "Fazendo git pull da branch $BRANCH..."
-git pull
+# Carregar variáveis do .env
+if [ -f .env ]; then
+  export $(grep -v '^#' .env | xargs)
+else
+  echo ".env file not found!"
+  exit 1
+fi
 
-# Ajustar permissões do diretório de cache
-echo "Ajustando permissões do diretório de cache..."
-chown -R $USER:www-data bootstrap/cache
-chmod -R 775 bootstrap/cache
+# Definir variáveis a partir do .env
+BRANCH="main"
+WEB_ROOT=$PROJECT_PATH
+HOST_USER=$DEPLOY_USER
+HOST_IP=$DEPLOY_HOST
 
-# Instale as dependências do Composer
-echo "Instalando dependências do Composer..."
-composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader
+# Verificar se as variáveis estão definidas
+if [ -z "$WEB_ROOT" ] || [ -z "$HOST_USER" ] || [ -z "$HOST_IP" ]; then
+  echo "One or more environment variables are missing."
+  exit 1
+fi
 
-# Execute as migrações
-echo "Executando migrações..."
-php artisan migrate --force
+# Comandos para executar no host
+COMMANDS=$(cat << EOF
+  cd $WEB_ROOT || exit;
+  echo "Fazendo git pull da branch $BRANCH...";
+  git pull origin $BRANCH;
+  echo "Instalando dependências do Composer...";
+  composer install --no-dev --no-interaction --prefer-dist --optimize-autoloader;
+  echo "Executando migrações...";
+  php artisan migrate --force;
+  echo "Otimização da aplicação...";
+  php artisan optimize:clear;
+  php artisan optimize;
+  echo "Deploy concluído com sucesso!";
+EOF
+)
 
-# Otimize a aplicação
-echo "Otimização da aplicação..."
-php artisan optimize:clear
-php artisan optimize
-
-# Ajustar permissões dos arquivos gerados
-echo "Ajustando permissões dos arquivos gerados..."
-chown -R $USER:www-data bootstrap/cache
-chmod -R 777 bootstrap/cache
-
-echo "Deploy concluído com sucesso!"
+# Executar comandos no host via SSH
+ssh $HOST_USER@$HOST_IP "$COMMANDS"

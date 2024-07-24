@@ -16,13 +16,15 @@ class ListConfigs extends ListRecords
     {
         return [
             Action::make('updateProject')
-                ->label('Atualizar Sistemas')
+                ->label('Atualizar Sistema')
                 ->action(function () {
                     $output = [];
                     $return_var = 0;
 
                     // Executar o script de atualização
                     exec('/var/www/update.sh', $output, $return_var);
+
+                    dd($output, $return_var);
 
                     // Verificar o status da execução
                     if ($return_var === 0) {
