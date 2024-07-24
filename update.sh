@@ -9,7 +9,7 @@ cd $WEB_ROOT || exit
 
 # Faça o pull do repositório
 echo "Fazendo git pull da branch $BRANCH..."
-git pull origin $BRANCH
+git pull
 
 # Ajustar permissões do diretório de cache
 echo "Ajustando permissões do diretório de cache..."
