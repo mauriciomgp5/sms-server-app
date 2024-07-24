@@ -16,7 +16,7 @@ class ListConfigs extends ListRecords
     {
         return [
             Action::make('updateProject')
-                ->label('Atualizar Sistema')
+                ->label('Atualizar Sistemas')
                 ->action(function () {
                     $output = [];
                     $return_var = 0;
