@@ -1,6 +1,7 @@
 #!/bin/bash
 
-LOG_FILE="/var/www/update.log"
+# Define o local do log
+LOG_FILE="/var/www/storage/logs/update.log"
 
 echo "Iniciando o script de atualização em $(date)" > $LOG_FILE
 
@@ -42,7 +43,7 @@ else
 fi
 
 # Comandos a serem executados
-if [ -n "$CONTAINER_NAME" ]; then
+if [ -n "$CONTAINER_NAME" ]; então
   COMMANDS=$(cat << EOF
     docker exec -i $CONTAINER_NAME bash -c "cd $WEB_ROOT && git checkout $BRANCH && git pull origin $BRANCH && \
     echo 'Instalando dependências do Composer...' && composer install $COMPOSER_FLAGS && \
@@ -63,14 +64,15 @@ EOF
 fi
 
 # Executar comandos no host via SSH
-echo "Conectando ao host $HOST_IP como $HOST_USER" >> $LOG_FILE
-ssh -i /var/www/.ssh/id_rsa -o StrictHostKeyChecking=no $HOST_USER@$HOST_IP "$COMMANDS" >> $LOG_FILE 2>&1
-SSH_RESULT=$?
+{
+  echo "Conectando ao host $HOST_IP como $HOST_USER"
+  ssh -i /var/www/.ssh/id_rsa -o StrictHostKeyChecking=no $HOST_USER@$HOST_IP "$COMMANDS"
+  SSH_RESULT=$?
 
-if [ $SSH_RESULT -ne 0 ]; then
-  echo "Falha ao executar comandos via SSH. Código de saída: $SSH_RESULT" >> $LOG_FILE
-  exit 1
-fi
+  if [ $SSH_RESULT -ne 0 ]; então
+    echo "Falha ao executar comandos via SSH. Código de saída: $SSH_RESULT"
+    exit 1
+  fi
 
-echo "Script de atualização concluído em $(date)" >> $LOG_FILE
-exit 0
+  echo "Script de atualização concluído em $(date)"
+} >> $LOG_FILE 2>&1
