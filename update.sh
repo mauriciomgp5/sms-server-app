@@ -14,6 +14,7 @@ cd /var/www || {
 # Carregar variáveis do .env
 if [ -f .env ]; then
   export $(grep -v '^#' .env | xargs)
+  echo "Variáveis do .env carregadas" >> $LOG_FILE
 else
   echo ".env file not found!" >> $LOG_FILE
   exit 1
@@ -43,7 +44,8 @@ else
 fi
 
 # Comandos a serem executados
-if [ -n "$CONTAINER_NAME" ]; então
+if [ -n "$CONTAINER_NAME" ]; then
+  echo "Executando no container Docker: $CONTAINER_NAME" >> $LOG_FILE
   COMMANDS=$(cat << EOF
     docker exec -i $CONTAINER_NAME bash -c "cd $WEB_ROOT && git checkout $BRANCH && git pull origin $BRANCH && \
     echo 'Instalando dependências do Composer...' && composer install $COMPOSER_FLAGS && \
@@ -53,6 +55,7 @@ if [ -n "$CONTAINER_NAME" ]; então
 EOF
   )
 else
+  echo "Executando diretamente no host" >> $LOG_FILE
   COMMANDS=$(cat << EOF
     cd $WEB_ROOT && git checkout $BRANCH && git pull origin $BRANCH && \
     echo 'Instalando dependências do Composer...' && composer install $COMPOSER_FLAGS && \
@@ -69,7 +72,7 @@ fi
   ssh -i /var/www/.ssh/id_rsa -o StrictHostKeyChecking=no $HOST_USER@$HOST_IP "$COMMANDS"
   SSH_RESULT=$?
 
-  if [ $SSH_RESULT -ne 0 ]; então
+  if [ $SSH_RESULT -ne 0 ]; then
     echo "Falha ao executar comandos via SSH. Código de saída: $SSH_RESULT"
     exit 1
   fi
