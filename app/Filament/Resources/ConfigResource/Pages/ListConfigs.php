@@ -31,7 +31,6 @@ class ListConfigs extends ListRecords
                             ->body('Projeto atualizado com sucesso!')
                             ->success()
                             ->send();
-                        dd($output);
                     } else {
                         Notification::make()
                             ->title('Erro')
