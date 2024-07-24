@@ -47,12 +47,10 @@ class ListSmsLogs extends ListRecords
                         $sgs = new SmsGatewayService();
                         $resp = $sgs->sendSms($data['message'], [$data['phone']], $company, auth()->user());
 
-                        $responseData = $resp->getData(true);
-
-                        if (isset($responseData['error'])) {
+                        if (isset($resp['error'])) {
                             Notification::make()
                                 ->title('Erro ao enviar SMS')
-                                ->body($responseData['error'])
+                                ->body($resp['error'])
                                 ->danger()
                                 ->send();
                             return;

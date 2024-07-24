@@ -203,7 +203,7 @@ class SmsGatewayService
         try {
             $config = Config::where('data->type', TypeEnum::Pricing)->first();
             if (!$config) {
-                return response()->json(['error' => 'Preços não configurado'], 500);
+                return ['error' => 'Preços não configurado'];
             }
             // Obtém o próximo slot disponível
             $slot = $this->getNextAvailableSlot();
@@ -234,7 +234,7 @@ class SmsGatewayService
                 info($response->body());
                 $data = $response->json();
             } else {
-                return response()->json(['error' => 'Erro: ' . $response->body()], $response->status());
+                return ['error' => 'Erro: ' . $response->body()];
             }
 
             // Registrar o envio no banco de dados
