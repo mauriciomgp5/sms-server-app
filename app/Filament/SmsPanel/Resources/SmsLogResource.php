@@ -35,15 +35,10 @@ class SmsLogResource extends Resource
                     ->label('Status')
                     ->badge()
                     ->searchable(),
-                Tables\Columns\TextColumn::make('sent_at')
-                    ->label('Enviado em')
-                    ->dateTime()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
                     ->label('Criado em')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                    ->dateTime('d/m/Y H:i:s')
+                    ->sortable(),
                 Tables\Columns\TextColumn::make('updated_at')
                     ->label('Atualizado em')
                     ->dateTime()
