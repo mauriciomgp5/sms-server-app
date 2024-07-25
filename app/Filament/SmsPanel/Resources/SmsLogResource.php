@@ -27,6 +27,10 @@ class SmsLogResource extends Resource
                 Tables\Columns\TextColumn::make('phone')
                     ->label('Telefone')
                     ->searchable(),
+                Tables\Columns\TextColumn::make('message')
+                    ->label('Mensagem')
+                    ->limit(50)
+                    ->searchable(),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
                     ->searchable(),
