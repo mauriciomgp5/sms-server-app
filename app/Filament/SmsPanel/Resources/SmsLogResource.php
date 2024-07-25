@@ -57,10 +57,7 @@ class SmsLogResource extends Resource
                     ->label('Editar'),
             ])
             ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make()
-                        ->label('Excluir selecionados'),
-                ]),
+                Tables\Actions\BulkActionGroup::make([]),
             ]);
     }
 
