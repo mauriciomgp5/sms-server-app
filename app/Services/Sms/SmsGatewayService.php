@@ -56,6 +56,8 @@ class SmsGatewayService
                 'slot_id' => $slot->id,
                 'phone' => $phone,
                 'message' => $message,
+                'user_id' => auth()->id(),
+                'company_id' => auth()->user()->companies->first()->id,
             ]);
             // Atualizar contagem de envios
             $slot->increment('sent_count');

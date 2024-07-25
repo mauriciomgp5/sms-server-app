@@ -121,7 +121,7 @@ class SmsSlotResource extends Resource
                     ])
                     ->action(function (array $data, $record) {
                         $sgs = new SmsGatewayService($record->gateway);
-                        $resp = $sgs->sendSms($data['message'], ['+' . $data['phone']], $record);
+                        $resp = $sgs->sendSmsBySlot($data['message'], ['+' . $data['phone']], $record);
                         if (isset($resp['error'])) {
                             Notification::make()
                                 ->title('Erro')
