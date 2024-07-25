@@ -220,9 +220,7 @@ class SmsGatewayService
             $numbersValidate = [];
             foreach ($phoneNumbers as $phone) {
                 $phone = preg_replace('/[^0-9]/', '', $phone);
-                if (strlen($phone) == 11) {
-                    $phone = '55' . $phone;
-                }
+                $phone = '+55' . $phone;
                 $numbersValidate[] = $phone;
             }
             $response = $request
