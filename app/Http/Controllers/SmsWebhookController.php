@@ -2,69 +2,43 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums;
+use Illuminate\Http\Request;
 use App\Models\SmsLog;
 use App\Models\SmsResponse;
-use Illuminate\Http\Request;
-use App\Services\Sms\SmsGatewayService;
+use App\Enums;
 
 class SmsWebhookController extends Controller
 {
     public function handle(Request $request)
     {
-        $data = $request
-            ->validate([
-                'phone' => 'required|string',
-                'message' => 'required|string',
-            ]);
-
-        $user = auth()->user();
-        if (!$user) {
-            return response()->json([
-                'message' => 'Unauthorized',
-                'errors' => [
-                    'user' => ['Usuário não autenticado']
-                ]
-            ], 401);
-        }
-
-        $company = $user->companies->first();
-        if (!$company) {
-            return response()->json([
-                'message' => 'Unauthorized',
-                'errors' => [
-                    'company' => ['Usuário não possui empresa']
-                ]
-            ], 401);
-        }
-        if ($company->balance?->balance > 0) {
-            $sgs = new SmsGatewayService();
-            $resp = $sgs->sendSms($data['message'], [$data['phone']], $company, auth()->user());
-
-            if (isset($resp['error'])) {
-                return response()->json([
-                    'message' => 'Erro ao enviar SMS',
-                    'errors' => [
-                        'sms' => [$resp['error']]
-                    ]
-                ], 500);
-            }
-        } else {
-            return response()->json([
-                'message' => 'Saldo insuficiente',
-                'errors' => [
-                    'sms' => ['Saldo insuficiente']
-                ]
-            ], 500);
-        }
-
-        return response()->json([
-            'message' => 'success',
-            'data' => [
-                'phone' => $data['phone'],
-                'message' => $data['message']
-            ]
+        //validate
+        $data = $request->validate([
+            'deviceId' => 'required|string',
+            'event' => 'required|string',
+            'id' => 'required|string',
+            'payload' => 'required|array',
+            'payload.message' => 'required|string',
+            'payload.phoneNumber' => 'required|string',
+            'payload.receivedAt' => 'required|date',
+            'webhookId' => 'required|string',
         ]);
+
+        $smsLog = SmsLog::where('phone', self::normalizePhoneNumber($data['payload']['phoneNumber']))
+            ->orderBy('created_at', 'desc')
+            ->first();
+        if (!$smsLog) {
+            return response()->json(['status' => 'error', 'message' => 'SMS log not found'], 404);
+        }
+
+        SmsResponse::create([
+            'sms_log_id' => $smsLog->id,
+            'message' => $data['payload']['message'],
+        ]);
+        $smsLog->update([
+            'status' => Enums\SmsLog\StatusEnum::Responsed,
+        ]);
+
+        return response()->json(['status' => 'success']);
     }
 
     private static function normalizePhoneNumber($phoneNumber)
