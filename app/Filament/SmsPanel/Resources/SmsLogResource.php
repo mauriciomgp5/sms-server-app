@@ -54,7 +54,7 @@ class SmsLogResource extends Resource
             ])
             ->bulkActions([
                 Tables\Actions\BulkActionGroup::make([]),
-            ]);
+            ])->defaultSort('created_at', 'desc');
     }
 
     public static function getRelations(): array
