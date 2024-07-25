@@ -33,6 +33,7 @@ class SmsLogResource extends Resource
                     ->searchable(),
                 Tables\Columns\TextColumn::make('status')
                     ->label('Status')
+                    ->badge()
                     ->searchable(),
                 Tables\Columns\TextColumn::make('sent_at')
                     ->label('Enviado em')
