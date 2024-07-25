@@ -52,7 +52,7 @@ class SmsLogResource extends Resource
                 Tables\Columns\TextColumn::make('slot.gateway.name')
                     ->label('Dispositivo')
                     ->sortable(),
-                Tables\Columns\TextColumn::make('slot_id')
+                Tables\Columns\TextColumn::make('slot.slot_number')
                     ->label('Slot')
                     ->numeric()
                     ->sortable(),

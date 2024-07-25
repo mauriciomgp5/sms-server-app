@@ -216,6 +216,7 @@ class SmsGatewayService
                 ->withHeaders([
                     'Content-Type' => 'application/json',
                 ])->baseUrl($urlBase);
+
             $numbersValidate = [];
             foreach ($phoneNumbers as $phone) {
                 $phone = preg_replace('/[^0-9]/', '', $phone);
