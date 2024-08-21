@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\SmsPanel\Resources;
+namespace App\Filament\Resources;
 
 use Filament\Forms;
 use Filament\Tables;
@@ -8,14 +8,14 @@ use App\Models\Company;
 use Filament\Forms\Form;
 use Filament\Tables\Table;
 use Illuminate\Support\Str;
+use Filament\Notifications\Actions\Action;
 use Filament\Resources\Resource;
 use Filament\Notifications\Notification;
-use Illuminate\Database\Eloquent\Builder;
-use Filament\Notifications\Actions\Action;
 use Leandrocfe\FilamentPtbrFormFields\Cep;
 use Leandrocfe\FilamentPtbrFormFields\Document;
+use App\Filament\Resources\CompanyResource\Pages;
 use Leandrocfe\FilamentPtbrFormFields\PhoneNumber;
-use App\Filament\SmsPanel\Resources\CompanyResource\Pages;
+
 class CompanyResource extends Resource
 {
     protected static ?string $label = 'Empresa';
@@ -128,9 +128,6 @@ class CompanyResource extends Resource
     public static function table(Table $table): Table
     {
         return $table
-            ->query(Company::query()->whereHas('users', function (Builder $query) {
-                $query->where('user_id', auth()->id());
-            }))
             ->columns([
                 Tables\Columns\TextColumn::make('name')
                     ->label('Nome')
