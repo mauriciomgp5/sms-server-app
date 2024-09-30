@@ -14,6 +14,7 @@ class SmsGateway extends Model
     protected $casts = [
         'is_active' => 'boolean',
         'data' => 'array',
+        'check_connection' => 'boolean',
     ];
 
     public function logs(): HasMany

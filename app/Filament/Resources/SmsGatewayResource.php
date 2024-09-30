@@ -60,6 +60,11 @@ class SmsGatewayResource extends Resource
                     ->hintIcon('heroicon-o-information-circle')
                     ->hintIconTooltip('Senha para autenticação no gateway'),
 
+                Forms\Components\Toggle::make('check_connection')
+                    ->label('Verificar conexão')
+                    ->hintIcon('heroicon-o-information-circle')
+                    ->hintIconTooltip('Verificar a conexão com o gateway a cada 10 minutos'),
+
                 Forms\Components\Textarea::make('description')
                     ->columnSpanFull()
                     ->label('Descrição')
