@@ -4,12 +4,9 @@ namespace App\Jobs\SmsGateway;
 
 use App\Models\User;
 use App\Models\SmsGateway;
-use Illuminate\Queue\SerializesModels;
 use App\Services\Sms\SmsGatewayService;
-use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Foundation\Queue\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Foundation\Bus\Dispatchable;
 use App\Notifications\SmsGatewayNotification;
 
 class CheckDeviceJob implements ShouldQueue
@@ -29,7 +26,7 @@ class CheckDeviceJob implements ShouldQueue
      */
     public function handle(): void
     {
-        $records = SmsGateway::get();
+        $records = SmsGateway::where('check_connection', true)->get();
 
         info('Checking devices...');
         foreach ($records as $record) {

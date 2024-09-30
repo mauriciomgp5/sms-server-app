@@ -30,7 +30,6 @@ class WhatsappChannel
         }
 
         try {
-            //code...
             $resp = Http::post('https://atendimento.mgpsistemas.com.br/api/send-whatsapp', [
                 'phone' => $phoneNumber,
                 'message' => $message,
