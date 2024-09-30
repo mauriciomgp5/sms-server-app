@@ -16,18 +16,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 class User extends Authenticatable implements FilamentUser
 {
     use HasFactory, Notifiable, HasApiTokens;
-
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
-    ];
-
     /**
      * The attributes that should be hidden for serialization.
      *
@@ -59,5 +47,10 @@ class User extends Authenticatable implements FilamentUser
     public function canAccessPanel(Panel $panel): bool
     {
         return $this->type !== TypeUserEnum::Api;
+    }
+
+    public function routeNotificationForSms()
+    {
+        return $this->phone_number; // Supondo que você tenha o campo phone_number no seu modelo
     }
 }
