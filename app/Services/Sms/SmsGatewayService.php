@@ -188,9 +188,14 @@ class SmsGatewayService
     public function getNextAvailableSlot()
     {
         // Seleciona o próximo slot que não atingiu o limite de envios mensais
-        $slot = SmsSlot::where('is_active', 1)
-            ->whereColumn('sent_count', '<', 'max_sends')
-            ->orderBy('updated_at', 'asc')
+        $slot = SmsSlot::where('sms_slots.is_active', 1)
+            ->join('sms_gateways', 'sms_slots.gateway_id', operator: '=', second: 'sms_gateways.id')
+            ->where(function ($query) {
+                $query->where('sms_gateways.is_active', 1)
+                    ->where('sms_gateways.check_connection', 1);
+            })
+            ->whereColumn('sms_slots.sent_count', '<', 'sms_slots.max_sends')
+            ->orderBy('sms_slots.updated_at', 'asc')
             ->first();
 
         if (!$slot) {
